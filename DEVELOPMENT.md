@@ -392,23 +392,23 @@ The project uses automated PyPI publishing through GitHub Actions. Releases are 
    ```
 
 2. **Create GitHub Release**
-   
+
    Go to the [Releases page](https://github.com/aws/mcp-proxy-for-aws/releases) and click "Draft a new release", then fill in:
-   
+
    - **Tag**: `v1.10.0` (must start with 'v' and follow semantic versioning)
    - **Target**: `main`
    - **Title**: `v1.10.0`
    - **Description**: Click "Generate release notes" for auto-generated notes
-   
+
    Click **"Publish release"** (not "Save draft")
 
 3. **Automated Publishing**
-   
+
    Once the release is published, GitHub Actions will automatically:
    - Run all tests and linting checks
    - Build distribution packages (wheel and source)
    - Publish to PyPI using Trusted Publishing
-   
+
    Monitor the workflow at: [Actions tab](https://github.com/aws/mcp-proxy-for-aws/actions)
 
 ### Version Numbering
