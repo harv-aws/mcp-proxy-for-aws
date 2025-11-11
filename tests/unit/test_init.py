@@ -36,8 +36,8 @@ class TestInit:
         # Accepts:
         # - 1.0.0 (clean release)
         # - 1.0.5.post1.dev1 (commits after a tag)
-        # - 0.0.post1.dev1 (no tags, fallback version)
-        version_pattern = r'^\d+\.\d+\.\d+(\.post\d+\.dev\d+)?$'
+        # - 0.0.post1.dev1 (no tags, fallback version - missing patch)
+        version_pattern = r'^\d+\.\d+(\.\d+)?(\.post\d+\.dev\d+)?$'
         assert re.match(version_pattern, mcp_proxy_for_aws.__version__), (
             f"Version '{mcp_proxy_for_aws.__version__}' does not follow expected version pattern"
         )
