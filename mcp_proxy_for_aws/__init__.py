@@ -16,6 +16,10 @@
 
 from importlib.metadata import version as _metadata_version
 
+from mcp_proxy_for_aws.transport_patch import apply_transport_401_patch as _apply_transport_patch
+
+_apply_transport_patch()
+
 
 __all__ = ['__version__']
 __version__ = _metadata_version('mcp-proxy-for-aws')
