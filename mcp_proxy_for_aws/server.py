@@ -32,6 +32,7 @@ from fastmcp.server.server import FastMCP
 from mcp_proxy_for_aws import __version__
 from mcp_proxy_for_aws.cli import parse_args
 from mcp_proxy_for_aws.logging_config import configure_logging
+from mcp_proxy_for_aws.middleware.debug_logging import DebugLoggingMiddleware
 from mcp_proxy_for_aws.middleware.initialize_middleware import InitializeMiddleware
 from mcp_proxy_for_aws.middleware.tool_error_middleware import ToolErrorMiddleware
 from mcp_proxy_for_aws.middleware.tool_filter import ToolFilteringMiddleware
@@ -100,6 +101,7 @@ async def run_proxy(args) -> None:
         )
         proxy.add_middleware(InitializeMiddleware(client_factory))
         add_tool_error_middleware(proxy, args.tool_timeout)
+        proxy.add_middleware(DebugLoggingMiddleware())
         add_logging_middleware(proxy, args.log_level)
         add_tool_filtering_middleware(proxy, args.read_only)
 

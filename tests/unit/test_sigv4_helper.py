@@ -26,6 +26,7 @@ from mcp_proxy_for_aws.sigv4_helper import (
     _sanitize_headers,
     create_aws_session,
     create_sigv4_client,
+    try_create_aws_session,
 )
 from unittest.mock import Mock, patch
 
@@ -122,11 +123,66 @@ class TestCreateAwsSession:
         assert 'invalid-profile' in str(exc_info.value)
 
 
+class TestTryCreateAwsSession:
+    """Test cases for the try_create_aws_session function."""
+
+    @patch('boto3.Session')
+    def test_returns_session_on_success(self, mock_session_class):
+        """Test that try_create_aws_session returns a session when credentials exist."""
+        mock_session = Mock()
+        mock_credentials = Mock()
+        mock_credentials.access_key = 'test_access_key'
+        mock_session.get_credentials.return_value = mock_credentials
+        mock_session_class.return_value = mock_session
+
+        result = try_create_aws_session(profile='valid-profile')
+
+        assert result == mock_session
+        mock_session_class.assert_called_once_with(profile_name='valid-profile')
+
+    @patch('boto3.Session')
+    def test_returns_none_on_missing_profile(self, mock_session_class):
+        """Test that try_create_aws_session returns None when profile does not exist."""
+        mock_session_class.side_effect = Exception(
+            'The config profile (test12) could not be found'
+        )
+
+        result = try_create_aws_session(profile='test12')
+
+        assert result is None
+
+    @patch('boto3.Session')
+    def test_returns_none_when_no_credentials(self, mock_session_class):
+        """Test that try_create_aws_session returns None when no credentials are available."""
+        mock_session = Mock()
+        mock_session.get_credentials.return_value = None
+        mock_session_class.return_value = mock_session
+
+        result = try_create_aws_session()
+
+        assert result is None
+
+    @patch('boto3.Session')
+    def test_returns_session_without_profile(self, mock_session_class):
+        """Test that try_create_aws_session works without profile argument."""
+        mock_session = Mock()
+        mock_credentials = Mock()
+        mock_credentials.access_key = 'test_access_key'
+        mock_session.get_credentials.return_value = mock_credentials
+        mock_session_class.return_value = mock_session
+
+        result = try_create_aws_session()
+
+        assert result == mock_session
+        mock_session_class.assert_called_once_with()
+
+
 class TestCreateSigv4Client:
     """Test cases for the create_sigv4_client function."""
 
+    @patch('mcp_proxy_for_aws.sigv4_helper.get_client_info', return_value=None)
     @patch('httpx.AsyncClient')
-    def test_create_sigv4_client_default(self, mock_client_class):
+    def test_create_sigv4_client_default(self, mock_client_class, mock_get_client_info):
         """Test creating SigV4 client with default parameters."""
         mock_client = Mock()
         mock_client_class.return_value = mock_client
@@ -147,8 +203,9 @@ class TestCreateSigv4Client:
         assert call_args[1]['headers']['User-Agent'] == expected_user_agent
         assert result == mock_client
 
+    @patch('mcp_proxy_for_aws.sigv4_helper.get_client_info', return_value=None)
     @patch('httpx.AsyncClient')
-    def test_create_sigv4_client_with_custom_headers(self, mock_client_class):
+    def test_create_sigv4_client_with_custom_headers(self, mock_client_class, mock_get_client_info):
         """Test creating SigV4 client with custom headers."""
         mock_client = Mock()
         mock_client_class.return_value = mock_client
@@ -203,8 +260,9 @@ class TestCreateSigv4Client:
         assert call_args[1]['proxies'] == {'http': 'http://proxy:8080'}
         assert result == mock_client
 
+    @patch('mcp_proxy_for_aws.sigv4_helper.get_client_info', return_value=None)
     @patch('httpx.AsyncClient')
-    def test_create_sigv4_client_with_prompt_context(self, mock_client_class):
+    def test_create_sigv4_client_with_prompt_context(self, mock_client_class, mock_get_client_info):
         """Test creating SigV4 client when prompts exist in the system context.
 
         This test simulates the scenario where the sigv4_helper is used in a context
